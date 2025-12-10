@@ -13,4 +13,3 @@ server:
 logging:
   level:
     org.springframework.web: DEBUG
-
