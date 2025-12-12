@@ -1,8 +1,10 @@
 package org.example.demo_ssr_v1.board;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.demo_ssr_v1.user.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -18,25 +20,35 @@ public class Board {
     private Long id;
     private String title;
     private String content;
-    private String username;
+    // N : 1
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     // pc --> db
     @CreationTimestamp
     private Timestamp createdAt;
 
-    public Board(String title, String content, String username) {
+    @Builder
+    public Board(String title, String content, User user) {
         this.title = title;
         this.content = content;
-        this.username = username;
+        this.user = user;
     }
 
     // Board 상태값 수정하는 로직
-    public void update(org.example.demo_ssr_v1.board.BoardRequest.UpdateDTO updateDTO) {
+    public void update(BoardRequest.UpdateDTO updateDTO) {
         // 유효성 검사 처리
         updateDTO.validate();
         this.title = updateDTO.getTitle();
         this.content = updateDTO.getContent();
-        this.username = updateDTO.getUsername();
+        // 게시글 수정은 작성자를 변경할 수 없다.
+        //this.user = updateDTO.getUsername();
+    }
+
+    // 게시글 소유자 확인 로직
+    public boolean isOwner(Long userId) {
+        return this.user.getId().equals(userId);
     }
 
     // 개별 필드 수정 - title
@@ -54,7 +66,4 @@ public class Board {
         }
         this.content = content;
     }
-
-
-
 }
